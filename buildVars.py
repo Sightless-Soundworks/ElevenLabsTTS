@@ -25,7 +25,7 @@ addon_info = AddonInfo(
 	# version
 	addon_version="2.0",
 	# Author(s)
-	addon_author="NVDA User",
+	addon_author="Sightless Soundworks",
 	# URL for the add-on documentation support
 	addon_url="https://github.com/akse0435/ElevenLabsTTS",
 	# URL for the add-on repository where the source code can be found
