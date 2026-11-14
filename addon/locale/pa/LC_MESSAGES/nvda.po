@@ -167,18 +167,6 @@ msgstr "API ਕੁੰਜੀ ਸੁਰੱਖਿਅਤ ਨਹੀਂ ਕੀਤੀ �
 msgid "ElevenLabs TTS"
 msgstr "ElevenLabs TTS"
 
-msgid "Clear &API key"
-msgstr "&API ਕੁੰਜੀ ਹਟਾਓ"
-
-msgid "Set &API key..."
-msgstr "&API ਕੁੰਜੀ ਸੈੱਟ ਕਰੋ..."
-
-msgid "Clear the ElevenLabs API key? ElevenLabs can't speak until a new key is set."
-msgstr "ਕੀ ElevenLabs API ਕੁੰਜੀ ਹਟਾਉਣੀ ਹੈ? ਨਵੀਂ ਕੁੰਜੀ ਸੈੱਟ ਹੋਣ ਤੱਕ ElevenLabs ਬੋਲ ਨਹੀਂ ਸਕਦਾ।"
-
-msgid "The API key could not be cleared. See the NVDA log for details."
-msgstr "API ਕੁੰਜੀ ਹਟਾਈ ਨਹੀਂ ਜਾ ਸਕੀ। ਵੇਰਵਿਆਂ ਲਈ NVDA ਲੌਗ ਵੇਖੋ।"
-
 msgid "ElevenLabs rejected this API key. Check that it was copied in full and that it is allowed to read voices."
 msgstr "ElevenLabs ਨੇ ਇਸ API ਕੁੰਜੀ ਨੂੰ ਰੱਦ ਕਰ ਦਿੱਤਾ। ਜਾਂਚ ਕਰੋ ਕਿ ਇਹ ਪੂਰੀ ਕਾਪੀ ਹੋਈ ਹੈ ਅਤੇ ਇਸਨੂੰ ਆਵਾਜ਼ਾਂ ਪੜ੍ਹਨ ਦੀ ਇਜਾਜ਼ਤ ਹੈ।"
 
@@ -236,3 +224,63 @@ msgstr "ਨੈਵੀਗੇਸ਼ਨ ਲਈ {synth} ਵਰਤਿਆ ਜਾ ਰਿ
 #. loaded, so either synthesizer's can be told apart, e.g. "eSpeak NG rate".
 msgid "{synth} {setting}"
 msgstr "{synth} {setting}"
+
+#. Translators: shown for an API key that hasn't been given a name.
+msgid "Unnamed key"
+msgstr "ਬਿਨਾਂ ਨਾਂ ਵਾਲੀ ਕੁੰਜੀ"
+
+#. Translators: shown when ElevenLabs can't be loaded after choosing another API key.
+msgid "ElevenLabs could not be loaded with this API key. See the NVDA log for details."
+msgstr "ਇਸ API ਕੁੰਜੀ ਨਾਲ ElevenLabs ਲੋਡ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਿਆ। ਵੇਰਵਿਆਂ ਲਈ NVDA ਲੌਗ ਵੇਖੋ।"
+
+#. Translators: label of the text box for the name the API key is listed under.
+msgid "&Name:"
+msgstr "&ਨਾਂ:"
+
+#. Translators: shown when OK is pressed without a name for the API key.
+msgid "Enter a name for the API key."
+msgstr "API ਕੁੰਜੀ ਲਈ ਇੱਕ ਨਾਂ ਦਰਜ ਕਰੋ।"
+
+#. Translators: shown when the API key entered is already saved, e.g. "...saved as Work."
+msgid "This API key is already saved as {name}."
+msgstr "ਇਹ API ਕੁੰਜੀ ਪਹਿਲਾਂ ਹੀ {name} ਵਜੋਂ ਸੁਰੱਖਿਅਤ ਹੈ।"
+
+#. Translators: label of the box in the ElevenLabs TTS settings choosing the API key in use.
+msgid "API &key:"
+msgstr "API &ਕੁੰਜੀ:"
+
+#. Translators: button in the ElevenLabs TTS settings that adds an API key.
+msgid "A&dd API key..."
+msgstr "API ਕੁੰਜੀ &ਜੋੜੋ..."
+
+#. Translators: button in the ElevenLabs TTS settings that renames the chosen API key.
+msgid "Re&name..."
+msgstr "&ਨਾਂ ਬਦਲੋ..."
+
+#. Translators: button in the ElevenLabs TTS settings that removes the chosen API key.
+msgid "&Remove"
+msgstr "&ਹਟਾਓ"
+
+#. Translators: label of the text box for an API key's new name.
+msgid "Name:"
+msgstr "ਨਾਂ:"
+
+#. Translators: title of the dialog renaming an API key.
+msgid "Rename API key"
+msgstr "API ਕੁੰਜੀ ਦਾ ਨਾਂ ਬਦਲੋ"
+
+#. Translators: shown when an API key can't be renamed.
+msgid "The API key could not be renamed. See the NVDA log for details."
+msgstr "API ਕੁੰਜੀ ਦਾ ਨਾਂ ਬਦਲਿਆ ਨਹੀਂ ਜਾ ਸਕਿਆ। ਵੇਰਵਿਆਂ ਲਈ NVDA ਲੌਗ ਵੇਖੋ।"
+
+#. Translators: asked before an API key is removed, e.g. "Remove the API key Work?"
+msgid "Remove the API key {name}?"
+msgstr "ਕੀ API ਕੁੰਜੀ {name} ਹਟਾਉਣੀ ਹੈ?"
+
+#. Translators: shown when the API key can't be removed.
+msgid "The API key could not be removed. See the NVDA log for details."
+msgstr "API ਕੁੰਜੀ ਹਟਾਈ ਨਹੀਂ ਜਾ ਸਕੀ। ਵੇਰਵਿਆਂ ਲਈ NVDA ਲੌਗ ਵੇਖੋ।"
+
+#. Translators: shown when the chosen API key can't be put in use.
+msgid "The API key could not be chosen. See the NVDA log for details."
+msgstr "API ਕੁੰਜੀ ਚੁਣੀ ਨਹੀਂ ਜਾ ਸਕੀ। ਵੇਰਵਿਆਂ ਲਈ NVDA ਲੌਗ ਵੇਖੋ।"

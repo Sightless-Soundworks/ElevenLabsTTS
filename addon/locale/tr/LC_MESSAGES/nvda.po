@@ -169,18 +169,6 @@ msgstr "API anahtarı kaydedilemedi. Ayrıntılar için NVDA günlüğüne bakı
 msgid "ElevenLabs TTS"
 msgstr "ElevenLabs TTS"
 
-msgid "Clear &API key"
-msgstr "&API anahtarını temizle"
-
-msgid "Set &API key..."
-msgstr "&API anahtarını ayarla..."
-
-msgid "Clear the ElevenLabs API key? ElevenLabs can't speak until a new key is set."
-msgstr "ElevenLabs API anahtarı temizlensin mi? Yeni bir anahtar ayarlanana kadar ElevenLabs konuşamaz."
-
-msgid "The API key could not be cleared. See the NVDA log for details."
-msgstr "API anahtarı temizlenemedi. Ayrıntılar için NVDA günlüğüne bakın."
-
 msgid "ElevenLabs rejected this API key. Check that it was copied in full and that it is allowed to read voices."
 msgstr "ElevenLabs bu API anahtarını reddetti. Anahtarın tamamen kopyalandığından ve sesleri okuma izni olduğundan emin olun."
 
@@ -238,3 +226,63 @@ msgstr "Gezinme için {synth} kullanılıyor."
 #. loaded, so either synthesizer's can be told apart, e.g. "eSpeak NG rate".
 msgid "{synth} {setting}"
 msgstr "{synth} {setting}"
+
+#. Translators: shown for an API key that hasn't been given a name.
+msgid "Unnamed key"
+msgstr "Adsız anahtar"
+
+#. Translators: shown when ElevenLabs can't be loaded after choosing another API key.
+msgid "ElevenLabs could not be loaded with this API key. See the NVDA log for details."
+msgstr "ElevenLabs bu API anahtarıyla yüklenemedi. Ayrıntılar için NVDA günlüğüne bakın."
+
+#. Translators: label of the text box for the name the API key is listed under.
+msgid "&Name:"
+msgstr "A&d:"
+
+#. Translators: shown when OK is pressed without a name for the API key.
+msgid "Enter a name for the API key."
+msgstr "API anahtarı için bir ad girin."
+
+#. Translators: shown when the API key entered is already saved, e.g. "...saved as Work."
+msgid "This API key is already saved as {name}."
+msgstr "Bu API anahtarı zaten {name} olarak kayıtlı."
+
+#. Translators: label of the box in the ElevenLabs TTS settings choosing the API key in use.
+msgid "API &key:"
+msgstr "API a&nahtarı:"
+
+#. Translators: button in the ElevenLabs TTS settings that adds an API key.
+msgid "A&dd API key..."
+msgstr "API anahtarı &ekle..."
+
+#. Translators: button in the ElevenLabs TTS settings that renames the chosen API key.
+msgid "Re&name..."
+msgstr "&Yeniden adlandır..."
+
+#. Translators: button in the ElevenLabs TTS settings that removes the chosen API key.
+msgid "&Remove"
+msgstr "&Kaldır"
+
+#. Translators: label of the text box for an API key's new name.
+msgid "Name:"
+msgstr "Ad:"
+
+#. Translators: title of the dialog renaming an API key.
+msgid "Rename API key"
+msgstr "API anahtarını yeniden adlandır"
+
+#. Translators: shown when an API key can't be renamed.
+msgid "The API key could not be renamed. See the NVDA log for details."
+msgstr "API anahtarı yeniden adlandırılamadı. Ayrıntılar için NVDA günlüğüne bakın."
+
+#. Translators: asked before an API key is removed, e.g. "Remove the API key Work?"
+msgid "Remove the API key {name}?"
+msgstr "{name} API anahtarı kaldırılsın mı?"
+
+#. Translators: shown when the API key can't be removed.
+msgid "The API key could not be removed. See the NVDA log for details."
+msgstr "API anahtarı kaldırılamadı. Ayrıntılar için NVDA günlüğüne bakın."
+
+#. Translators: shown when the chosen API key can't be put in use.
+msgid "The API key could not be chosen. See the NVDA log for details."
+msgstr "API anahtarı seçilemedi. Ayrıntılar için NVDA günlüğüne bakın."

@@ -171,18 +171,6 @@ msgstr "Níorbh fhéidir an eochair API a shábháil. Féach ar loga NVDA le hag
 msgid "ElevenLabs TTS"
 msgstr "ElevenLabs TTS"
 
-msgid "Clear &API key"
-msgstr "Glan an eochair &API"
-
-msgid "Set &API key..."
-msgstr "Socraigh eochair &API..."
-
-msgid "Clear the ElevenLabs API key? ElevenLabs can't speak until a new key is set."
-msgstr "An bhfuil fonn ort an eochair API ElevenLabs a ghlanadh? Ní féidir le ElevenLabs labhairt go dtí go socraítear eochair nua."
-
-msgid "The API key could not be cleared. See the NVDA log for details."
-msgstr "Níorbh fhéidir an eochair API a ghlanadh. Féach ar loga NVDA le haghaidh sonraí."
-
 msgid "ElevenLabs rejected this API key. Check that it was copied in full and that it is allowed to read voices."
 msgstr "Dhiúltaigh ElevenLabs don eochair API seo. Seiceáil gur cóipeáladh go hiomlán í agus go bhfuil cead aici guthanna a léamh."
 
@@ -240,3 +228,63 @@ msgstr "Ag úsáid {synth} don nascleanúint."
 #. loaded, so either synthesizer's can be told apart, e.g. "eSpeak NG rate".
 msgid "{synth} {setting}"
 msgstr "{synth} {setting}"
+
+#. Translators: shown for an API key that hasn't been given a name.
+msgid "Unnamed key"
+msgstr "Eochair gan ainm"
+
+#. Translators: shown when ElevenLabs can't be loaded after choosing another API key.
+msgid "ElevenLabs could not be loaded with this API key. See the NVDA log for details."
+msgstr "Níorbh fhéidir ElevenLabs a lódáil leis an eochair API seo. Féach ar loga NVDA le haghaidh sonraí."
+
+#. Translators: label of the text box for the name the API key is listed under.
+msgid "&Name:"
+msgstr "Ai&nm:"
+
+#. Translators: shown when OK is pressed without a name for the API key.
+msgid "Enter a name for the API key."
+msgstr "Cuir isteach ainm don eochair API."
+
+#. Translators: shown when the API key entered is already saved, e.g. "...saved as Work."
+msgid "This API key is already saved as {name}."
+msgstr "Tá an eochair API seo sábháilte cheana mar {name}."
+
+#. Translators: label of the box in the ElevenLabs TTS settings choosing the API key in use.
+msgid "API &key:"
+msgstr "&Eochair API:"
+
+#. Translators: button in the ElevenLabs TTS settings that adds an API key.
+msgid "A&dd API key..."
+msgstr "&Cuir eochair API leis..."
+
+#. Translators: button in the ElevenLabs TTS settings that renames the chosen API key.
+msgid "Re&name..."
+msgstr "&Athainmnigh..."
+
+#. Translators: button in the ElevenLabs TTS settings that removes the chosen API key.
+msgid "&Remove"
+msgstr "&Bain"
+
+#. Translators: label of the text box for an API key's new name.
+msgid "Name:"
+msgstr "Ainm:"
+
+#. Translators: title of the dialog renaming an API key.
+msgid "Rename API key"
+msgstr "Athainmnigh an eochair API"
+
+#. Translators: shown when an API key can't be renamed.
+msgid "The API key could not be renamed. See the NVDA log for details."
+msgstr "Níorbh fhéidir an eochair API a athainmniú. Féach ar loga NVDA le haghaidh sonraí."
+
+#. Translators: asked before an API key is removed, e.g. "Remove the API key Work?"
+msgid "Remove the API key {name}?"
+msgstr "An bhfuil fonn ort an eochair API {name} a bhaint?"
+
+#. Translators: shown when the API key can't be removed.
+msgid "The API key could not be removed. See the NVDA log for details."
+msgstr "Níorbh fhéidir an eochair API a bhaint. Féach ar loga NVDA le haghaidh sonraí."
+
+#. Translators: shown when the chosen API key can't be put in use.
+msgid "The API key could not be chosen. See the NVDA log for details."
+msgstr "Níorbh fhéidir an eochair API a roghnú. Féach ar loga NVDA le haghaidh sonraí."

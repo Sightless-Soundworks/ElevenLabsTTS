@@ -1731,10 +1731,12 @@ class SynthDriver(BaseSynthDriver):
 	@classmethod
 	def check(cls):
 		# Not offered until an API key is set.
-		return cls._getApiKey() is not None
+		return _settings.getApiKey() is not None
 
 	def __init__(self):
 		super().__init__()
+		# The key in use when loaded; using another one means loading the driver again.
+		self._keyId = _settings.activeKeyId()
 		self._voiceId = None
 		self._language = DEFAULT_LANGUAGE
 		self._modelId = DEFAULT_MODEL
@@ -2098,10 +2100,9 @@ class SynthDriver(BaseSynthDriver):
 
 	# --- API key ---
 
-	@staticmethod
-	def _getApiKey():
-		# Read each time, as the settings panel can change it.
-		return _settings.getApiKey()
+	def _getApiKey(self):
+		# The key it was loaded with, read each time, as the settings panel can remove it.
+		return _settings.getApiKey(self._keyId) if self._keyId is not None else None
 
 	# --- Error reporting ---
 
@@ -2124,7 +2125,7 @@ class SynthDriver(BaseSynthDriver):
 		if navigation is not None:
 			log.error(
 				f"ElevenLabs: {reason} Say all uses {navigation.name} until ElevenLabs is selected again, "
-				f"a new API key is set, or voices are checked again."
+				f"another API key is chosen, or voices are checked again."
 			)
 			self._announceGivenUp()
 			return
@@ -2287,13 +2288,13 @@ class SynthDriver(BaseSynthDriver):
 		if self._recordedFormat == self.outputFormat:
 			# Nothing new, so the settings file isn't touched for every utterance.
 			return
-		with _settings.editing() as settings:
+		with _settings.editingAccount(self._keyId) as settings:
 			settings["outputFormat"] = self.outputFormat
 		self._recordedFormat = self.outputFormat
 
 	def _loadOutputFormat(self):
 		"""Restores the audio format worked out in an earlier session."""
-		savedFormat = _settings.get("outputFormat")
+		savedFormat = _settings.getAccount(self._keyId, "outputFormat")
 		for index, (formatName, sampleRate) in enumerate(OUTPUT_FORMATS):
 			if formatName == savedFormat:
 				self._formatIndex = index
@@ -2361,7 +2362,7 @@ class SynthDriver(BaseSynthDriver):
 
 	def _loadUnusableVoices(self):
 		"""Restores the chosen model's checked result, if it still applies."""
-		check = _settings.get("voiceChecks", {}).get(self._modelId) or {}
+		check = _settings.getAccount(self._keyId, "voiceChecks", {}).get(self._modelId) or {}
 		if check.get("fingerprint") != self._accountFingerprint():
 			# The plan or the voice list changed, so the old result means nothing.
 			self._unusableVoices = set()
@@ -2373,7 +2374,7 @@ class SynthDriver(BaseSynthDriver):
 		self._voicesChecked = True
 
 	def _saveUnusableVoices(self):
-		with _settings.editing() as settings:
+		with _settings.editingAccount(self._keyId) as settings:
 			check = settings.setdefault("voiceChecks", {}).setdefault(self._modelId, {})
 			check["unusable"] = sorted(self._unusableVoices)
 			# The fingerprint says every voice is known, so only then is it written.
@@ -2868,7 +2869,7 @@ class SynthDriver(BaseSynthDriver):
 	def _loadRefusedFields(self):
 		"""Restores the fields each model has refused."""
 		_refused.clear()
-		for modelId, saved in (_settings.get("refusedFields") or {}).items():
+		for modelId, saved in (_settings.getAccount(self._keyId, "refusedFields") or {}).items():
 			fields = {f for f in saved if f in _LEARNABLE_FIELDS} if isinstance(saved, list) else set()
 			if fields:
 				_refused[modelId] = fields
@@ -2890,7 +2891,7 @@ class SynthDriver(BaseSynthDriver):
 			return False
 		fields = _refused.setdefault(modelId, set())
 		fields.update(new)
-		with _settings.editing() as settings:
+		with _settings.editingAccount(self._keyId) as settings:
 			settings.setdefault("refusedFields", {})[modelId] = sorted(fields)
 		log.warning(
 			f"ElevenLabs: {info.name} does not take {', '.join(sorted(new))}, so it is left out "
@@ -2907,7 +2908,7 @@ class SynthDriver(BaseSynthDriver):
 
 	def _loadModelCheck(self):
 		"""Restores the cached model check; False if there is none for this account state."""
-		check = _settings.get("modelCheck") or {}
+		check = _settings.getAccount(self._keyId, "modelCheck") or {}
 		if check.get("fingerprint") != self._modelFingerprint():
 			self._modelsChecked = False
 			return False
@@ -2933,7 +2934,7 @@ class SynthDriver(BaseSynthDriver):
 		# The default model has already spoken, so it needs no check.
 		pending = [m for m in _offeredModels if m != DEFAULT_MODEL]
 		# Learned again from scratch; the default model's on first refusal.
-		with _settings.editing() as settings:
+		with _settings.editingAccount(self._keyId) as settings:
 			settings.pop("refusedFields", None)
 		_refused.clear()
 		voiceId = self._modelProbeVoice()
@@ -2973,7 +2974,7 @@ class SynthDriver(BaseSynthDriver):
 				"run again next time the synthesizer is loaded."
 			)
 			return
-		with _settings.editing() as settings:
+		with _settings.editingAccount(self._keyId) as settings:
 			settings["modelCheck"] = {
 				"fingerprint": self._modelFingerprint(),
 				"unusable": sorted(self._unusableModels),

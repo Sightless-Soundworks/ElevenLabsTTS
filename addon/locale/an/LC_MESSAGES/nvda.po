@@ -169,18 +169,6 @@ msgstr "No s'ha puesto alzar a clau d'API. Veye o rechistro de NVDA pa mas detal
 msgid "ElevenLabs TTS"
 msgstr "ElevenLabs TTS"
 
-msgid "Clear &API key"
-msgstr "Borrar a clau d'&API"
-
-msgid "Set &API key..."
-msgstr "Establir a clau d'&API..."
-
-msgid "Clear the ElevenLabs API key? ElevenLabs can't speak until a new key is set."
-msgstr "Borrar a clau d'API d'ElevenLabs? ElevenLabs no podrá charrar dica que s'establezca una nueva clau."
-
-msgid "The API key could not be cleared. See the NVDA log for details."
-msgstr "No s'ha puesto borrar a clau d'API. Veye o rechistro de NVDA pa mas detalles."
-
 msgid "ElevenLabs rejected this API key. Check that it was copied in full and that it is allowed to read voices."
 msgstr "ElevenLabs ha refusau esta clau d'API. Comprebe que s'haiga copiau entera y que tienga permiso pa leyer voces."
 
@@ -238,3 +226,63 @@ msgstr "Emplegando {synth} pa la navegación."
 #. loaded, so either synthesizer's can be told apart, e.g. "eSpeak NG rate".
 msgid "{synth} {setting}"
 msgstr "{synth} {setting}"
+
+#. Translators: shown for an API key that hasn't been given a name.
+msgid "Unnamed key"
+msgstr "Clau sin nombre"
+
+#. Translators: shown when ElevenLabs can't be loaded after choosing another API key.
+msgid "ElevenLabs could not be loaded with this API key. See the NVDA log for details."
+msgstr "No s'ha puesto cargar ElevenLabs con ista clau d'API. Veye o rechistro de NVDA pa mas detalles."
+
+#. Translators: label of the text box for the name the API key is listed under.
+msgid "&Name:"
+msgstr "&Nombre:"
+
+#. Translators: shown when OK is pressed without a name for the API key.
+msgid "Enter a name for the API key."
+msgstr "Escribe un nombre pa la clau d'API."
+
+#. Translators: shown when the API key entered is already saved, e.g. "...saved as Work."
+msgid "This API key is already saved as {name}."
+msgstr "Ista clau d'API ya ye alzada como {name}."
+
+#. Translators: label of the box in the ElevenLabs TTS settings choosing the API key in use.
+msgid "API &key:"
+msgstr "C&lau d'API:"
+
+#. Translators: button in the ElevenLabs TTS settings that adds an API key.
+msgid "A&dd API key..."
+msgstr "A&dhibir clau d'API..."
+
+#. Translators: button in the ElevenLabs TTS settings that renames the chosen API key.
+msgid "Re&name..."
+msgstr "&Renombrar..."
+
+#. Translators: button in the ElevenLabs TTS settings that removes the chosen API key.
+msgid "&Remove"
+msgstr "&Eliminar"
+
+#. Translators: label of the text box for an API key's new name.
+msgid "Name:"
+msgstr "Nombre:"
+
+#. Translators: title of the dialog renaming an API key.
+msgid "Rename API key"
+msgstr "Renombrar a clau d'API"
+
+#. Translators: shown when an API key can't be renamed.
+msgid "The API key could not be renamed. See the NVDA log for details."
+msgstr "No s'ha puesto renombrar a clau d'API. Veye o rechistro de NVDA pa mas detalles."
+
+#. Translators: asked before an API key is removed, e.g. "Remove the API key Work?"
+msgid "Remove the API key {name}?"
+msgstr "Eliminar a clau d'API {name}?"
+
+#. Translators: shown when the API key can't be removed.
+msgid "The API key could not be removed. See the NVDA log for details."
+msgstr "No s'ha puesto eliminar a clau d'API. Veye o rechistro de NVDA pa mas detalles."
+
+#. Translators: shown when the chosen API key can't be put in use.
+msgid "The API key could not be chosen. See the NVDA log for details."
+msgstr "No s'ha puesto triar a clau d'API. Veye o rechistro de NVDA pa mas detalles."

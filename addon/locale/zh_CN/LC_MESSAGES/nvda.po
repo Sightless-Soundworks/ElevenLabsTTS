@@ -165,18 +165,6 @@ msgstr "无法保存 API 密钥。详情请查看 NVDA 日志。"
 msgid "ElevenLabs TTS"
 msgstr "ElevenLabs TTS"
 
-msgid "Clear &API key"
-msgstr "清除 API 密钥(&A)"
-
-msgid "Set &API key..."
-msgstr "设置 API 密钥(&A)..."
-
-msgid "Clear the ElevenLabs API key? ElevenLabs can't speak until a new key is set."
-msgstr "要清除 ElevenLabs API 密钥吗？在设置新密钥之前，ElevenLabs 将无法朗读。"
-
-msgid "The API key could not be cleared. See the NVDA log for details."
-msgstr "无法清除 API 密钥。详情请查看 NVDA 日志。"
-
 msgid "ElevenLabs rejected this API key. Check that it was copied in full and that it is allowed to read voices."
 msgstr "ElevenLabs 拒绝了此 API 密钥。请检查密钥是否完整复制，以及是否具有读取语音的权限。"
 
@@ -234,3 +222,63 @@ msgstr "导航使用 {synth}。"
 #. loaded, so either synthesizer's can be told apart, e.g. "eSpeak NG rate".
 msgid "{synth} {setting}"
 msgstr "{synth} {setting}"
+
+#. Translators: shown for an API key that hasn't been given a name.
+msgid "Unnamed key"
+msgstr "未命名密钥"
+
+#. Translators: shown when ElevenLabs can't be loaded after choosing another API key.
+msgid "ElevenLabs could not be loaded with this API key. See the NVDA log for details."
+msgstr "无法使用此 API 密钥加载 ElevenLabs。详情请查看 NVDA 日志。"
+
+#. Translators: label of the text box for the name the API key is listed under.
+msgid "&Name:"
+msgstr "名称(&N):"
+
+#. Translators: shown when OK is pressed without a name for the API key.
+msgid "Enter a name for the API key."
+msgstr "请输入 API 密钥的名称。"
+
+#. Translators: shown when the API key entered is already saved, e.g. "...saved as Work."
+msgid "This API key is already saved as {name}."
+msgstr "此 API 密钥已保存为 {name}。"
+
+#. Translators: label of the box in the ElevenLabs TTS settings choosing the API key in use.
+msgid "API &key:"
+msgstr "API 密钥(&K):"
+
+#. Translators: button in the ElevenLabs TTS settings that adds an API key.
+msgid "A&dd API key..."
+msgstr "添加 API 密钥(&D)..."
+
+#. Translators: button in the ElevenLabs TTS settings that renames the chosen API key.
+msgid "Re&name..."
+msgstr "重命名(&N)..."
+
+#. Translators: button in the ElevenLabs TTS settings that removes the chosen API key.
+msgid "&Remove"
+msgstr "删除(&R)"
+
+#. Translators: label of the text box for an API key's new name.
+msgid "Name:"
+msgstr "名称:"
+
+#. Translators: title of the dialog renaming an API key.
+msgid "Rename API key"
+msgstr "重命名 API 密钥"
+
+#. Translators: shown when an API key can't be renamed.
+msgid "The API key could not be renamed. See the NVDA log for details."
+msgstr "无法重命名 API 密钥。详情请查看 NVDA 日志。"
+
+#. Translators: asked before an API key is removed, e.g. "Remove the API key Work?"
+msgid "Remove the API key {name}?"
+msgstr "要删除 API 密钥 {name} 吗？"
+
+#. Translators: shown when the API key can't be removed.
+msgid "The API key could not be removed. See the NVDA log for details."
+msgstr "无法删除 API 密钥。详情请查看 NVDA 日志。"
+
+#. Translators: shown when the chosen API key can't be put in use.
+msgid "The API key could not be chosen. See the NVDA log for details."
+msgstr "无法选择 API 密钥。详情请查看 NVDA 日志。"

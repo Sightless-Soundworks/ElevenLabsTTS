@@ -60,6 +60,23 @@ def _elevenLabs():
 	return synth if synth is not None and synth.name == "elevenlabs" else None
 
 
+def _keyLabel(name):
+	"""How a saved key is shown: its name, or a default for one without."""
+	# Translators: shown for an API key that hasn't been given a name.
+	return name or _("Unnamed key")
+
+
+def _useActiveKey(parent):
+	"""Loads ElevenLabs again if it runs with another key than the one now in use."""
+	synth = _elevenLabs()
+	active = _settings.activeKeyId()
+	if synth is None or active is None or getattr(synth, "_keyId", active) == active:
+		return
+	if not synthDriverHandler.setSynth(synth.name):
+		# Translators: shown when ElevenLabs can't be loaded after choosing another API key.
+		_showKeyError(parent, _("ElevenLabs could not be loaded with this API key. See the NVDA log for details."))
+
+
 def _setNavigationSynth(name):
 	"""Saves name as the synthesizer for navigation (None for none) and loads it
 	if ElevenLabs is running. False if it couldn't be loaded."""
@@ -97,12 +114,19 @@ def _confirm(parent, message):
 
 
 class _ApiKeyDialog(SettingsDialog):
-	"""Asks for the API key and only accepts one ElevenLabs takes."""
+	"""Asks for a name and an API key, and only saves a key ElevenLabs takes.
+	keyId is the saved key's id once OK has been pressed."""
 
 	title = KEY_TITLE
 
 	def makeSettings(self, settingsSizer):
 		helper = guiHelper.BoxSizerHelper(self, sizer=settingsSizer)
+		self.keyId = None
+		self._nameEdit = helper.addLabeledControl(
+			# Translators: label of the text box for the name the API key is listed under.
+			_("&Name:"),
+			wx.TextCtrl,
+		)
 		self._keyEdit = helper.addLabeledControl(
 			# Translators: label of the text box the API key is pasted into.
 			_("&API key:"),
@@ -119,16 +143,29 @@ class _ApiKeyDialog(SettingsDialog):
 		self._cancelled = False
 
 	def postInit(self):
-		self._keyEdit.SetFocus()
+		self._nameEdit.SetFocus()
 
 	def onOk(self, evt):
 		if self._checking:
 			# Enter pressed again; the running check decides.
 			return
+		if not self._nameEdit.GetValue().strip():
+			# Translators: shown when OK is pressed without a name for the API key.
+			_showKeyError(self, _("Enter a name for the API key."))
+			self._nameEdit.SetFocus()
+			return
 		key = self._keyEdit.GetValue().strip()
 		if not key:
 			# Translators: shown when OK is pressed without an API key.
 			self._showError(_("Paste your ElevenLabs API key first."))
+			return
+		existing = _settings.findApiKey(key)
+		if existing is not None:
+			names = dict(_settings.apiKeys())
+			# Translators: shown when the API key entered is already saved, e.g. "...saved as Work."
+			self._showError(_("This API key is already saved as {name}.").format(
+				name=_keyLabel(names.get(existing))
+			))
 			return
 		self._checking = True
 		self._showStatus(True)
@@ -163,16 +200,14 @@ class _ApiKeyDialog(SettingsDialog):
 			return
 		self._checking = False
 		self._showStatus(False)
-		if error is None and not _settings.setApiKey(key):
-			# Translators: shown when a working API key can't be saved.
-			error = _("The API key could not be saved. See the NVDA log for details.")
+		if error is None:
+			self.keyId = _settings.addApiKey(self._nameEdit.GetValue().strip(), key)
+			if self.keyId is None:
+				# Translators: shown when a working API key can't be saved.
+				error = _("The API key could not be saved. See the NVDA log for details.")
 		if error is not None:
 			self._showError(error)
 			return
-		synth = _elevenLabs()
-		if synth is not None:
-			# A new key may be what ElevenLabs was missing when it was given up.
-			synth.retryAfterFallBack()
 		super().onOk(None)
 
 	def _showStatus(self, show):
@@ -192,9 +227,24 @@ class ElevenLabsSettingsPanel(SettingsPanel):
 
 	def makeSettings(self, settingsSizer):
 		helper = guiHelper.BoxSizerHelper(self, sizer=settingsSizer)
-		self._keyButton = helper.addItem(wx.Button(self))
-		self._keyButton.Bind(wx.EVT_BUTTON, self._onKeyButton)
-		self._updateKeyButton()
+		# Adding, renaming and removing a key apply at once; which key is used, on save.
+		self._keyList = helper.addLabeledControl(
+			# Translators: label of the box in the ElevenLabs TTS settings choosing the API key in use.
+			_("API &key:"),
+			wx.Choice,
+			choices=[],
+		)
+		buttons = helper.addItem(guiHelper.ButtonHelper(wx.HORIZONTAL))
+		# Translators: button in the ElevenLabs TTS settings that adds an API key.
+		self._addButton = buttons.addButton(self, label=_("A&dd API key..."))
+		self._addButton.Bind(wx.EVT_BUTTON, self._onAdd)
+		# Translators: button in the ElevenLabs TTS settings that renames the chosen API key.
+		self._renameButton = buttons.addButton(self, label=_("Re&name..."))
+		self._renameButton.Bind(wx.EVT_BUTTON, self._onRename)
+		# Translators: button in the ElevenLabs TTS settings that removes the chosen API key.
+		self._removeButton = buttons.addButton(self, label=_("&Remove"))
+		self._removeButton.Bind(wx.EVT_BUTTON, self._onRemove)
+		self._fillKeyList(_settings.activeKeyId())
 		saved = _settings.get("navigationSynth")
 		# None first: ElevenLabs speaks everything. NVDA's own list, so only
 		# synthesizers that can run here are offered.
@@ -220,48 +270,90 @@ class ElevenLabsSettingsPanel(SettingsPanel):
 		)
 		self._navigationList.SetSelection(self._navigationNames.index(saved) if saved else 0)
 
-	def _updateKeyButton(self):
-		if _settings.getApiKey() is not None:
-			# Translators: button in the ElevenLabs TTS settings that removes the API key.
-			label = _("Clear &API key")
-		else:
-			# Translators: button in the ElevenLabs TTS settings that opens the API key dialog.
-			label = _("Set &API key...")
-		self._keyButton.SetLabel(label)
+	def _fillKeyList(self, selected):
+		"""Lists the saved keys, with selected chosen, or the first if it isn't saved."""
+		keys = _settings.apiKeys()
+		self._keyIds = [keyId for keyId, name in keys]
+		self._keyList.SetItems([_keyLabel(name) for keyId, name in keys])
+		if keys:
+			self._keyList.SetSelection(self._keyIds.index(selected) if selected in self._keyIds else 0)
+		for control in (self._keyList, self._renameButton, self._removeButton):
+			control.Enable(bool(keys))
 		self.Layout()
 
-	def _onKeyButton(self, evt):
-		if _settings.getApiKey() is None:
-			self._setKey()
-		else:
-			self._clearKey()
+	def _selectedKey(self):
+		"""(id, name) of the key chosen in the list, or (None, None)."""
+		index = self._keyList.GetSelection()
+		if index == wx.NOT_FOUND or index >= len(self._keyIds):
+			return None, None
+		keyId = self._keyIds[index]
+		return keyId, dict(_settings.apiKeys()).get(keyId)
 
-	def _setKey(self):
-		if _ApiKeyDialog(self).ShowModal() == wx.ID_OK:
-			self._updateKeyButton()
+	def _onAdd(self, evt):
+		dialog = _ApiKeyDialog(self)
+		if dialog.ShowModal() == wx.ID_OK and dialog.keyId is not None:
+			# Chosen here, and used once the settings are saved.
+			self._fillKeyList(dialog.keyId)
+		self._keyList.SetFocus()
 
-	def _clearKey(self):
-		if not _confirm(
+	def _onRename(self, evt):
+		keyId, name = self._selectedKey()
+		if keyId is None:
+			return
+		with wx.TextEntryDialog(
 			self,
-			# Translators: asked before the API key is removed.
-			_("Clear the ElevenLabs API key? ElevenLabs can't speak until a new key is set."),
+			# Translators: label of the text box for an API key's new name.
+			_("Name:"),
+			# Translators: title of the dialog renaming an API key.
+			_("Rename API key"),
+			value=name,
+		) as dialog:
+			if dialog.ShowModal() != wx.ID_OK:
+				return
+			newName = dialog.GetValue().strip()
+		if not newName or newName == name:
+			return
+		if not _settings.renameApiKey(keyId, newName):
+			# Translators: shown when an API key can't be renamed.
+			_showKeyError(self, _("The API key could not be renamed. See the NVDA log for details."))
+			return
+		self._fillKeyList(keyId)
+		self._keyList.SetFocus()
+
+	def _onRemove(self, evt):
+		keyId, name = self._selectedKey()
+		if keyId is None or not _confirm(
+			self,
+			# Translators: asked before an API key is removed, e.g. "Remove the API key Work?"
+			_("Remove the API key {name}?").format(name=_keyLabel(name)),
 		):
 			return
-		if not _settings.clearApiKey():
+		if not _settings.removeApiKey(keyId):
 			# Translators: shown when the API key can't be removed.
-			_showKeyError(self, _("The API key could not be cleared. See the NVDA log for details."))
+			_showKeyError(self, _("The API key could not be removed. See the NVDA log for details."))
 			return
-		self._updateKeyButton()
-		synth = getSynth()
-		if synth is not None and synth.name == "elevenlabs":
+		self._fillKeyList(_settings.activeKeyId())
+		self._keyList.SetFocus()
+		synth = _elevenLabs()
+		if synth is None or getattr(synth, "_keyId", None) != keyId:
+			return
+		if _settings.activeKeyId() is not None:
+			# The key now in use takes over at once.
+			_useActiveKey(self)
+		else:
 			# Without a key it can't speak, so NVDA mustn't be left silent.
-			synth._fallBack("the API key was cleared.")
+			synth._fallBack("its API key was removed.")
 
 	def onSave(self):
-		# Key changes apply at once; only the synthesizer is left to save.
 		name = self._navigationNames[self._navigationList.GetSelection()]
 		if name != _settings.get("navigationSynth"):
 			_setNavigationSynth(name)
+		keyId, keyName = self._selectedKey()
+		if keyId is not None and keyId != _settings.activeKeyId() and not _settings.setActiveKey(keyId):
+			# Translators: shown when the chosen API key can't be put in use.
+			_showKeyError(self, _("The API key could not be chosen. See the NVDA log for details."))
+			return
+		_useActiveKey(self)
 
 
 class GlobalPlugin(globalPluginHandler.GlobalPlugin):

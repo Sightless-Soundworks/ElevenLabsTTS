@@ -171,18 +171,6 @@ msgstr "API விசையைச் சேமிக்க முடியவி
 msgid "ElevenLabs TTS"
 msgstr "ElevenLabs TTS"
 
-msgid "Clear &API key"
-msgstr "API விசையை அழி (&A)"
-
-msgid "Set &API key..."
-msgstr "API விசையை அமை (&A)..."
-
-msgid "Clear the ElevenLabs API key? ElevenLabs can't speak until a new key is set."
-msgstr "ElevenLabs API விசையை அழிக்கவா? புதிய விசை அமைக்கப்படும் வரை ElevenLabs பேச முடியாது."
-
-msgid "The API key could not be cleared. See the NVDA log for details."
-msgstr "API விசையை அழிக்க முடியவில்லை. விவரங்களுக்கு NVDA பதிவைப் பார்க்கவும்."
-
 msgid "ElevenLabs rejected this API key. Check that it was copied in full and that it is allowed to read voices."
 msgstr "ElevenLabs இந்த API விசையை நிராகரித்தது. அது முழுமையாக நகலெடுக்கப்பட்டதா, குரல்களைப் படிக்க அனுமதி உள்ளதா எனச் சரிபார்க்கவும்."
 
@@ -240,3 +228,63 @@ msgstr "வழிசெலுத்தலுக்கு {synth} பயன்ப
 #. loaded, so either synthesizer's can be told apart, e.g. "eSpeak NG rate".
 msgid "{synth} {setting}"
 msgstr "{synth} {setting}"
+
+#. Translators: shown for an API key that hasn't been given a name.
+msgid "Unnamed key"
+msgstr "பெயரில்லாத விசை"
+
+#. Translators: shown when ElevenLabs can't be loaded after choosing another API key.
+msgid "ElevenLabs could not be loaded with this API key. See the NVDA log for details."
+msgstr "இந்த API விசையுடன் ElevenLabs-ஐ ஏற்ற முடியவில்லை. விவரங்களுக்கு NVDA பதிவைப் பார்க்கவும்."
+
+#. Translators: label of the text box for the name the API key is listed under.
+msgid "&Name:"
+msgstr "பெயர் (&N):"
+
+#. Translators: shown when OK is pressed without a name for the API key.
+msgid "Enter a name for the API key."
+msgstr "API விசைக்கு ஒரு பெயரை உள்ளிடவும்."
+
+#. Translators: shown when the API key entered is already saved, e.g. "...saved as Work."
+msgid "This API key is already saved as {name}."
+msgstr "இந்த API விசை ஏற்கனவே {name} என்ற பெயரில் சேமிக்கப்பட்டுள்ளது."
+
+#. Translators: label of the box in the ElevenLabs TTS settings choosing the API key in use.
+msgid "API &key:"
+msgstr "API விசை (&K):"
+
+#. Translators: button in the ElevenLabs TTS settings that adds an API key.
+msgid "A&dd API key..."
+msgstr "API விசையைச் சேர் (&D)..."
+
+#. Translators: button in the ElevenLabs TTS settings that renames the chosen API key.
+msgid "Re&name..."
+msgstr "பெயர்மாற்று (&N)..."
+
+#. Translators: button in the ElevenLabs TTS settings that removes the chosen API key.
+msgid "&Remove"
+msgstr "அகற்று (&R)"
+
+#. Translators: label of the text box for an API key's new name.
+msgid "Name:"
+msgstr "பெயர்:"
+
+#. Translators: title of the dialog renaming an API key.
+msgid "Rename API key"
+msgstr "API விசையின் பெயரை மாற்று"
+
+#. Translators: shown when an API key can't be renamed.
+msgid "The API key could not be renamed. See the NVDA log for details."
+msgstr "API விசையின் பெயரை மாற்ற முடியவில்லை. விவரங்களுக்கு NVDA பதிவைப் பார்க்கவும்."
+
+#. Translators: asked before an API key is removed, e.g. "Remove the API key Work?"
+msgid "Remove the API key {name}?"
+msgstr "API விசை {name}-ஐ அகற்றவா?"
+
+#. Translators: shown when the API key can't be removed.
+msgid "The API key could not be removed. See the NVDA log for details."
+msgstr "API விசையை அகற்ற முடியவில்லை. விவரங்களுக்கு NVDA பதிவைப் பார்க்கவும்."
+
+#. Translators: shown when the chosen API key can't be put in use.
+msgid "The API key could not be chosen. See the NVDA log for details."
+msgstr "API விசையைத் தேர்ந்தெடுக்க முடியவில்லை. விவரங்களுக்கு NVDA பதிவைப் பார்க்கவும்."

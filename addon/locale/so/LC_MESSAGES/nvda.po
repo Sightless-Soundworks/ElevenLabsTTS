@@ -170,18 +170,6 @@ msgstr "Furaha API lama kaydin karin. Faahfaahinta ka eeg diiwaanka NVDA."
 msgid "ElevenLabs TTS"
 msgstr "ElevenLabs TTS"
 
-msgid "Clear &API key"
-msgstr "Tirtir furaha &API"
-
-msgid "Set &API key..."
-msgstr "Deji furaha &API..."
-
-msgid "Clear the ElevenLabs API key? ElevenLabs can't speak until a new key is set."
-msgstr "Ma la tirtiraa furaha API ee ElevenLabs? ElevenLabs ma hadli karo ilaa fure cusub la dejiyo."
-
-msgid "The API key could not be cleared. See the NVDA log for details."
-msgstr "Furaha API lama tirtiri karin. Faahfaahinta ka eeg diiwaanka NVDA."
-
 msgid "ElevenLabs rejected this API key. Check that it was copied in full and that it is allowed to read voices."
 msgstr "ElevenLabs wuu diiday furahan API. Hubi in si buuxda loo koobiyeeyay iyo in loo oggol yahay inuu akhriyo codadka."
 
@@ -239,3 +227,63 @@ msgstr "{synth} ayaa loo isticmaalayaa socodka."
 #. loaded, so either synthesizer's can be told apart, e.g. "eSpeak NG rate".
 msgid "{synth} {setting}"
 msgstr "{synth} {setting}"
+
+#. Translators: shown for an API key that hasn't been given a name.
+msgid "Unnamed key"
+msgstr "Fure aan magac lahayn"
+
+#. Translators: shown when ElevenLabs can't be loaded after choosing another API key.
+msgid "ElevenLabs could not be loaded with this API key. See the NVDA log for details."
+msgstr "ElevenLabs laguma soo shubi karin furahan API. Faahfaahinta ka eeg diiwaanka NVDA."
+
+#. Translators: label of the text box for the name the API key is listed under.
+msgid "&Name:"
+msgstr "&Magac:"
+
+#. Translators: shown when OK is pressed without a name for the API key.
+msgid "Enter a name for the API key."
+msgstr "Geli magac furaha API."
+
+#. Translators: shown when the API key entered is already saved, e.g. "...saved as Work."
+msgid "This API key is already saved as {name}."
+msgstr "Furahan API horay ayaa loogu kaydiyay {name}."
+
+#. Translators: label of the box in the ElevenLabs TTS settings choosing the API key in use.
+msgid "API &key:"
+msgstr "&Furaha API:"
+
+#. Translators: button in the ElevenLabs TTS settings that adds an API key.
+msgid "A&dd API key..."
+msgstr "&Ku dar fure API..."
+
+#. Translators: button in the ElevenLabs TTS settings that renames the chosen API key.
+msgid "Re&name..."
+msgstr "&Dib u magacow..."
+
+#. Translators: button in the ElevenLabs TTS settings that removes the chosen API key.
+msgid "&Remove"
+msgstr "&Tirtir"
+
+#. Translators: label of the text box for an API key's new name.
+msgid "Name:"
+msgstr "Magac:"
+
+#. Translators: title of the dialog renaming an API key.
+msgid "Rename API key"
+msgstr "Dib u magacow furaha API"
+
+#. Translators: shown when an API key can't be renamed.
+msgid "The API key could not be renamed. See the NVDA log for details."
+msgstr "Furaha API dib looma magacaabi karin. Faahfaahinta ka eeg diiwaanka NVDA."
+
+#. Translators: asked before an API key is removed, e.g. "Remove the API key Work?"
+msgid "Remove the API key {name}?"
+msgstr "Ma la tirtiraa furaha API {name}?"
+
+#. Translators: shown when the API key can't be removed.
+msgid "The API key could not be removed. See the NVDA log for details."
+msgstr "Furaha API lama tirtiri karin. Faahfaahinta ka eeg diiwaanka NVDA."
+
+#. Translators: shown when the chosen API key can't be put in use.
+msgid "The API key could not be chosen. See the NVDA log for details."
+msgstr "Furaha API lama dooran karin. Faahfaahinta ka eeg diiwaanka NVDA."

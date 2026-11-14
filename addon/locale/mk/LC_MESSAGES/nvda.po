@@ -172,18 +172,6 @@ msgstr "API клучот не може да се зачува. Видете го
 msgid "ElevenLabs TTS"
 msgstr "ElevenLabs TTS"
 
-msgid "Clear &API key"
-msgstr "Избриши го &API клучот"
-
-msgid "Set &API key..."
-msgstr "Постави &API клуч..."
-
-msgid "Clear the ElevenLabs API key? ElevenLabs can't speak until a new key is set."
-msgstr "Да се избрише ElevenLabs API клучот? ElevenLabs не може да зборува додека не се постави нов клуч."
-
-msgid "The API key could not be cleared. See the NVDA log for details."
-msgstr "API клучот не може да се избрише. Видете го дневникот на NVDA за детали."
-
 msgid "ElevenLabs rejected this API key. Check that it was copied in full and that it is allowed to read voices."
 msgstr "ElevenLabs го одби овој API клуч. Проверете дали е копиран целосно и дали има дозвола да чита гласови."
 
@@ -241,3 +229,63 @@ msgstr "Се користи {synth} за навигација."
 #. loaded, so either synthesizer's can be told apart, e.g. "eSpeak NG rate".
 msgid "{synth} {setting}"
 msgstr "{synth} {setting}"
+
+#. Translators: shown for an API key that hasn't been given a name.
+msgid "Unnamed key"
+msgstr "Клуч без име"
+
+#. Translators: shown when ElevenLabs can't be loaded after choosing another API key.
+msgid "ElevenLabs could not be loaded with this API key. See the NVDA log for details."
+msgstr "ElevenLabs не може да се вчита со овој API клуч. Видете го дневникот на NVDA за детали."
+
+#. Translators: label of the text box for the name the API key is listed under.
+msgid "&Name:"
+msgstr "&Име:"
+
+#. Translators: shown when OK is pressed without a name for the API key.
+msgid "Enter a name for the API key."
+msgstr "Внесете име за API клучот."
+
+#. Translators: shown when the API key entered is already saved, e.g. "...saved as Work."
+msgid "This API key is already saved as {name}."
+msgstr "Овој API клуч е веќе зачуван како {name}."
+
+#. Translators: label of the box in the ElevenLabs TTS settings choosing the API key in use.
+msgid "API &key:"
+msgstr "API &клуч:"
+
+#. Translators: button in the ElevenLabs TTS settings that adds an API key.
+msgid "A&dd API key..."
+msgstr "&Додај API клуч..."
+
+#. Translators: button in the ElevenLabs TTS settings that renames the chosen API key.
+msgid "Re&name..."
+msgstr "&Преименувај..."
+
+#. Translators: button in the ElevenLabs TTS settings that removes the chosen API key.
+msgid "&Remove"
+msgstr "&Отстрани"
+
+#. Translators: label of the text box for an API key's new name.
+msgid "Name:"
+msgstr "Име:"
+
+#. Translators: title of the dialog renaming an API key.
+msgid "Rename API key"
+msgstr "Преименувај API клуч"
+
+#. Translators: shown when an API key can't be renamed.
+msgid "The API key could not be renamed. See the NVDA log for details."
+msgstr "API клучот не може да се преименува. Видете го дневникот на NVDA за детали."
+
+#. Translators: asked before an API key is removed, e.g. "Remove the API key Work?"
+msgid "Remove the API key {name}?"
+msgstr "Да се отстрани API клучот {name}?"
+
+#. Translators: shown when the API key can't be removed.
+msgid "The API key could not be removed. See the NVDA log for details."
+msgstr "API клучот не може да се отстрани. Видете го дневникот на NVDA за детали."
+
+#. Translators: shown when the chosen API key can't be put in use.
+msgid "The API key could not be chosen. See the NVDA log for details."
+msgstr "API клучот не може да се избере. Видете го дневникот на NVDA за детали."

@@ -169,18 +169,6 @@ msgstr "Kunci API tidak dapat disimpan. Lihat log NVDA untuk detailnya."
 msgid "ElevenLabs TTS"
 msgstr "ElevenLabs TTS"
 
-msgid "Clear &API key"
-msgstr "Hapus kunci &API"
-
-msgid "Set &API key..."
-msgstr "Atur kunci &API..."
-
-msgid "Clear the ElevenLabs API key? ElevenLabs can't speak until a new key is set."
-msgstr "Hapus kunci API ElevenLabs? ElevenLabs tidak dapat berbicara sampai kunci baru diatur."
-
-msgid "The API key could not be cleared. See the NVDA log for details."
-msgstr "Kunci API tidak dapat dihapus. Lihat log NVDA untuk detailnya."
-
 msgid "ElevenLabs rejected this API key. Check that it was copied in full and that it is allowed to read voices."
 msgstr "ElevenLabs menolak kunci API ini. Pastikan kunci disalin sepenuhnya dan diizinkan membaca suara."
 
@@ -238,3 +226,63 @@ msgstr "Menggunakan {synth} untuk navigasi."
 #. loaded, so either synthesizer's can be told apart, e.g. "eSpeak NG rate".
 msgid "{synth} {setting}"
 msgstr "{synth} {setting}"
+
+#. Translators: shown for an API key that hasn't been given a name.
+msgid "Unnamed key"
+msgstr "Kunci tanpa nama"
+
+#. Translators: shown when ElevenLabs can't be loaded after choosing another API key.
+msgid "ElevenLabs could not be loaded with this API key. See the NVDA log for details."
+msgstr "ElevenLabs tidak dapat dimuat dengan kunci API ini. Lihat log NVDA untuk detailnya."
+
+#. Translators: label of the text box for the name the API key is listed under.
+msgid "&Name:"
+msgstr "&Nama:"
+
+#. Translators: shown when OK is pressed without a name for the API key.
+msgid "Enter a name for the API key."
+msgstr "Masukkan nama untuk kunci API."
+
+#. Translators: shown when the API key entered is already saved, e.g. "...saved as Work."
+msgid "This API key is already saved as {name}."
+msgstr "Kunci API ini sudah disimpan sebagai {name}."
+
+#. Translators: label of the box in the ElevenLabs TTS settings choosing the API key in use.
+msgid "API &key:"
+msgstr "&Kunci API:"
+
+#. Translators: button in the ElevenLabs TTS settings that adds an API key.
+msgid "A&dd API key..."
+msgstr "&Tambah kunci API..."
+
+#. Translators: button in the ElevenLabs TTS settings that renames the chosen API key.
+msgid "Re&name..."
+msgstr "&Ganti nama..."
+
+#. Translators: button in the ElevenLabs TTS settings that removes the chosen API key.
+msgid "&Remove"
+msgstr "&Hapus"
+
+#. Translators: label of the text box for an API key's new name.
+msgid "Name:"
+msgstr "Nama:"
+
+#. Translators: title of the dialog renaming an API key.
+msgid "Rename API key"
+msgstr "Ganti nama kunci API"
+
+#. Translators: shown when an API key can't be renamed.
+msgid "The API key could not be renamed. See the NVDA log for details."
+msgstr "Nama kunci API tidak dapat diganti. Lihat log NVDA untuk detailnya."
+
+#. Translators: asked before an API key is removed, e.g. "Remove the API key Work?"
+msgid "Remove the API key {name}?"
+msgstr "Hapus kunci API {name}?"
+
+#. Translators: shown when the API key can't be removed.
+msgid "The API key could not be removed. See the NVDA log for details."
+msgstr "Kunci API tidak dapat dihapus. Lihat log NVDA untuk detailnya."
+
+#. Translators: shown when the chosen API key can't be put in use.
+msgid "The API key could not be chosen. See the NVDA log for details."
+msgstr "Kunci API tidak dapat dipilih. Lihat log NVDA untuk detailnya."

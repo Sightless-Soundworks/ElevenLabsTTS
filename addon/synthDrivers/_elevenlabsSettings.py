@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # The add-on's own settings, in elevenlabs_settings.json in NVDA's configuration
-# folder. The API key is encrypted with DPAPI, for the current Windows user only.
+# folder. The API keys are encrypted with DPAPI, for the current Windows user only.
 #
 # The leading underscore keeps NVDA from listing this module as a synthesizer.
 
@@ -9,6 +9,7 @@ import copy
 import ctypes
 import json
 import os
+import secrets
 import threading
 from contextlib import contextmanager
 from ctypes import wintypes
@@ -21,9 +22,10 @@ SETTINGS_FILENAME = "elevenlabs_settings.json"
 _lock = threading.RLock()
 # The parsed file, loaded on first use. Only this module writes the file.
 _data = None
-# The decrypted key, cached; _UNREAD until first asked for.
-_UNREAD = object()
-_apiKey = _UNREAD
+# Decrypted keys by id, cached; None for one that can't be decrypted.
+_apiKeys = {}
+# What is learned about an account, kept per key, in "accounts".
+_ACCOUNT_SETTINGS = ("outputFormat", "voiceChecks", "modelCheck", "refusedFields")
 
 
 def settingsPath():
@@ -50,8 +52,28 @@ def _load():
 		except OSError:
 			pass
 		data = {}
+	if _migrate(data):
+		_save(data)
 	_data = data
 	return _data
+
+
+def _migrate(data):
+	"""Moves the single key of earlier versions, and what was learned about its
+	account, into the list of keys; True if anything changed."""
+	legacy = data.pop("apiKey", None)
+	learned = {name: data.pop(name) for name in _ACCOUNT_SETTINGS if name in data}
+	if not legacy:
+		# Without its key, what was learned belongs to no account.
+		return bool(learned)
+	keyId = _newKeyId(data)
+	# Named by the user later; the settings show a default meanwhile.
+	data.setdefault("apiKeys", []).append({"id": keyId, "name": "", "key": legacy})
+	if _activeKeyId(data) is None:
+		data["activeKey"] = keyId
+	if learned:
+		data.setdefault("accounts", {})[keyId] = learned
+	return True
 
 
 def _save(data):
@@ -87,14 +109,16 @@ def editing():
 
 
 def invalidateChecks():
-	"""Forgets the recorded voice and model checks, so the next load redoes them.
+	"""Forgets the recorded voice and model checks of every account, so the next
+	load redoes them.
 
 	For when the synthesizer is not running and there is nothing to check against."""
 	global _data
 	with _lock:
 		data = copy.deepcopy(_load())
-		data.pop("voiceChecks", None)
-		data.pop("modelCheck", None)
+		for learned in data.get("accounts", {}).values():
+			learned.pop("voiceChecks", None)
+			learned.pop("modelCheck", None)
 		if data == _data:
 			return True
 		if not _save(data):
@@ -159,53 +183,148 @@ def _crypt(function, data, *extra):
 		_kernel32.LocalFree(ctypes.cast(dataOut.pbData, ctypes.c_void_p))
 
 
-def getApiKey():
-	"""The saved API key, or None if there is none or it can't be decrypted."""
-	global _apiKey
+def _keys(data):
+	"""The saved keys in data, in the order they were added."""
+	return [
+		k for k in data.get("apiKeys", ())
+		if isinstance(k, dict) and isinstance(k.get("id"), str) and k.get("key")
+	]
+
+
+def _activeKeyId(data):
+	active = data.get("activeKey")
+	return active if any(k["id"] == active for k in _keys(data)) else None
+
+
+def _newKeyId(data):
+	used = {k["id"] for k in _keys(data)}
+	while True:
+		keyId = secrets.token_hex(4)
+		if keyId not in used:
+			return keyId
+
+
+def apiKeys():
+	"""The saved keys as (id, name), in the order they were added."""
 	with _lock:
-		if _apiKey is not _UNREAD:
-			return _apiKey
-		_apiKey = None
-		saved = _load().get("apiKey")
-		if saved:
-			try:
-				_apiKey = _crypt(
-					_crypt32.CryptUnprotectData, base64.b64decode(saved), None
-				).decode("utf-8")
-			except (OSError, ValueError):
-				# E.g. a configuration copied from another computer or user.
-				log.warning(
-					"ElevenLabs: the saved API key can't be decrypted by this Windows user "
-					"on this computer. Set it again in NVDA's settings.",
-					exc_info=True,
-				)
-		return _apiKey
+		return [(k["id"], k.get("name") or "") for k in _keys(_load())]
 
 
-def setApiKey(key):
-	"""Encrypts and saves key; False if it couldn't be saved."""
-	global _apiKey
+def activeKeyId():
+	"""The id of the key in use, or None if there is none."""
+	with _lock:
+		return _activeKeyId(_load())
+
+
+def getApiKey(keyId=None):
+	"""A saved key, by default the one in use; None if there is none or it can't be decrypted."""
+	with _lock:
+		if keyId is None:
+			keyId = activeKeyId()
+			if keyId is None:
+				return None
+		if keyId in _apiKeys:
+			return _apiKeys[keyId]
+		saved = next((k["key"] for k in _keys(_load()) if k["id"] == keyId), None)
+		if saved is None:
+			return None
+		key = None
+		try:
+			key = _crypt(_crypt32.CryptUnprotectData, base64.b64decode(saved), None).decode("utf-8")
+		except (OSError, ValueError):
+			# E.g. a configuration copied from another computer or user.
+			log.warning(
+				"ElevenLabs: a saved API key can't be decrypted by this Windows user "
+				"on this computer. Add it again in NVDA's settings.",
+				exc_info=True,
+			)
+		_apiKeys[keyId] = key
+		return key
+
+
+def findApiKey(key):
+	"""The id of the saved key equal to key, or None."""
+	with _lock:
+		return next((keyId for keyId, name in apiKeys() if getApiKey(keyId) == key), None)
+
+
+def addApiKey(name, key):
+	"""Encrypts and saves key under name, putting it in use if no other key is;
+	its id, or None if it couldn't be saved."""
 	try:
 		encrypted = _crypt(_crypt32.CryptProtectData, key.encode("utf-8"), None)
 	except OSError:
 		log.error("ElevenLabs: could not encrypt the API key", exc_info=True)
-		return False
+		return None
 	with _lock:
 		with editing() as data:
-			data["apiKey"] = base64.b64encode(encrypted).decode("ascii")
-		saved = _data.get("apiKey") == data["apiKey"]
-		if saved:
-			_apiKey = key
-		return saved
+			keyId = _newKeyId(data)
+			data.setdefault("apiKeys", []).append({
+				"id": keyId,
+				"name": name,
+				"key": base64.b64encode(encrypted).decode("ascii"),
+			})
+			if _activeKeyId(data) is None:
+				data["activeKey"] = keyId
+		if not any(k["id"] == keyId for k in _keys(_data)):
+			return None
+		_apiKeys[keyId] = key
+		return keyId
 
 
-def clearApiKey():
-	"""Removes the saved key; False if the file couldn't be saved."""
-	global _apiKey
+def renameApiKey(keyId, name):
+	"""Renames a saved key; False if the file couldn't be saved."""
 	with _lock:
 		with editing() as data:
-			data.pop("apiKey", None)
-		cleared = "apiKey" not in _data
-		if cleared:
-			_apiKey = None
-		return cleared
+			for k in _keys(data):
+				if k["id"] == keyId:
+					k["name"] = name
+		return any(k["id"] == keyId and k.get("name") == name for k in _keys(_data))
+
+
+def removeApiKey(keyId):
+	"""Removes a key and what was learned about its account. If it was in use, the
+	first key left is used instead. False if the file couldn't be saved."""
+	with _lock:
+		with editing() as data:
+			data["apiKeys"] = [k for k in _keys(data) if k["id"] != keyId]
+			data.get("accounts", {}).pop(keyId, None)
+			if _activeKeyId(data) is None:
+				remaining = _keys(data)
+				if remaining:
+					data["activeKey"] = remaining[0]["id"]
+				else:
+					data.pop("activeKey", None)
+		removed = not any(k["id"] == keyId for k in _keys(_data))
+		if removed:
+			_apiKeys.pop(keyId, None)
+		return removed
+
+
+def setActiveKey(keyId):
+	"""Puts a saved key in use; False if it couldn't be."""
+	with _lock:
+		with editing() as data:
+			if any(k["id"] == keyId for k in _keys(data)):
+				data["activeKey"] = keyId
+		return _activeKeyId(_data) == keyId
+
+
+# --- What is learned about each account ---
+
+
+def getAccount(keyId, name, default=None):
+	"""A copy of something learned about the account of key keyId."""
+	with _lock:
+		return copy.deepcopy(_load().get("accounts", {}).get(keyId, {}).get(name, default))
+
+
+@contextmanager
+def editingAccount(keyId):
+	"""Yields what was learned about the account of key keyId to change in place, then
+	saves it. Changes for a key that has been removed are dropped."""
+	with editing() as data:
+		if not any(k["id"] == keyId for k in _keys(data)):
+			yield {}
+			return
+		yield data.setdefault("accounts", {}).setdefault(keyId, {})
