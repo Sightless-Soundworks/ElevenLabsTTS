@@ -300,17 +300,20 @@ class ElevenLabsSettingsPanel(SettingsPanel):
 		keyId, name = self._selectedKey()
 		if keyId is None:
 			return
-		with wx.TextEntryDialog(
+		dialog = wx.TextEntryDialog(
 			self,
 			# Translators: label of the text box for an API key's new name.
 			_("Name:"),
 			# Translators: title of the dialog renaming an API key.
 			_("Rename API key"),
 			value=name,
-		) as dialog:
+		)
+		try:
 			if dialog.ShowModal() != wx.ID_OK:
 				return
 			newName = dialog.GetValue().strip()
+		finally:
+			dialog.Destroy()
 		if not newName or newName == name:
 			return
 		if not _settings.renameApiKey(keyId, newName):

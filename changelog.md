@@ -1,3 +1,6 @@
+V2.1.1 (11/14/2026):
+The secrets module is no longer used.
+
 V2.1 (11/14/2026):
 If ElevenLabs can't be used when NVDA starts, the synthesizer for navigation now speaks everything, if one is set up and working.
 NVDA should now start faster when ElevenLabs is active, due to most checks now running in the background.

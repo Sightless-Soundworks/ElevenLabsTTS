@@ -9,7 +9,6 @@ import copy
 import ctypes
 import json
 import os
-import secrets
 import threading
 from contextlib import contextmanager
 from ctypes import wintypes
@@ -199,7 +198,8 @@ def _activeKeyId(data):
 def _newKeyId(data):
 	used = {k["id"] for k in _keys(data)}
 	while True:
-		keyId = secrets.token_hex(4)
+		# Not secrets.token_hex: older NVDA versions don't bundle the secrets module.
+		keyId = os.urandom(4).hex()
 		if keyId not in used:
 			return keyId
 

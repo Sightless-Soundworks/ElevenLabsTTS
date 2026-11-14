@@ -23,7 +23,7 @@ addon_info = AddonInfo(
 	# Translators: Long description to be shown for this add-on on add-on information from add-on store
 	addon_description=_("Speech synthesizer driver that streams audio from the ElevenLabs text-to-speech API."),
 	# version
-	addon_version="2.1",
+	addon_version="2.1.1",
 	# Author(s)
 	addon_author="Sightless Soundworks",
 	# URL for the add-on documentation support
