@@ -1,3 +1,8 @@
+V2.1 (11/14/2026):
+If ElevenLabs can't be used when NVDA starts, the synthesizer for navigation now speaks everything, if one is set up and working.
+NVDA should now start faster when ElevenLabs is active, due to most checks now running in the background.
+You can now set up multiple API keys, and information about the account of each key is saved.
+
 V2.0 (10/31/2026):
 The API key is now set in a new ElevenLabs TTS category in NVDA's settings. The key is checked with ElevenLabs before it is saved, and is stored encrypted for your Windows user. ElevenLabs only appears in the synthesizer list once a key is set.
 If you are upgrading: elevenlabs_settings.txt is no longer read, so set your key again in the new category. You can then delete the old file, which holds your key in plain text.
