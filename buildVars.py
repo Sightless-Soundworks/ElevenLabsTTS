@@ -23,13 +23,13 @@ addon_info = AddonInfo(
 	# Translators: Long description to be shown for this add-on on add-on information from add-on store
 	addon_description=_("Speech synthesizer driver that streams audio from the ElevenLabs text-to-speech API."),
 	# version
-	addon_version="2.0",
+	addon_version="2.1",
 	# Author(s)
 	addon_author="Sightless Soundworks",
 	# URL for the add-on documentation support
-	addon_url="https://github.com/akse0435/ElevenLabsTTS",
+	addon_url="https://github.com/Sightless-Soundworks/ElevenLabsTTS",
 	# URL for the add-on repository where the source code can be found
-	addon_sourceURL="https://github.com/akse0435/ElevenLabsTTS",
+	addon_sourceURL="https://github.com/Sightless-SoundworksElevenLabsTTS",
 	# Documentation file name
 	addon_docFileName="readme.html",
 	# Minimum NVDA version supported (e.g. "2019.3.0", minor version is optional)
@@ -44,7 +44,7 @@ addon_info = AddonInfo(
 	# Add-on license such as GPL 2
 	addon_license="MIT",
 	# URL for the license document the ad-on is licensed under
-	addon_licenseURL="https://github.com/akse0435/ElevenLabsTTS/blob/main/LICENSE",
+	addon_licenseURL="https://github.com/Sightless-SoundworksElevenLabsTTS/blob/main/LICENSE",
 )
 
 # Define the python files that are the sources of your add-on.
