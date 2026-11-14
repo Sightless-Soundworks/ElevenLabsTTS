@@ -106,10 +106,8 @@ for file in pythonFiles:
 
 # Convert markdown files to html
 # We need at least doc in English and should enable the Help button for the add-on in Add-ons Manager
-if (cssFile := Path("style.css")).is_file():
-	cssPath = docsDir / cssFile
-	cssTarget = env.Command(str(cssPath), str(cssFile), Copy("$TARGET", "$SOURCE"))
-	env.Depends(addon, cssTarget)
+# The stylesheet is put into each HTML file rather than shipped next to them.
+cssFile = env.File("style.css") if Path("style.css").is_file() else None
 
 if (readmeFile := Path("readme.md")).is_file():
 	readmePath = docsDir / buildVars.baseLanguage / readmeFile
@@ -121,8 +119,10 @@ for mdFile in env.Glob(docsDir/"*/*.md"):
 	# Thus, we find the moFile for this language and depend on it if it exists.
 	lang = mdFile.dir.name
 	moFile = moByLang.get(lang)
-	htmlFile = env.md2html(mdFile, moFile=moFile, mdExtensions=buildVars.markdownExtensions)
+	htmlFile = env.md2html(mdFile, moFile=moFile, mdExtensions=buildVars.markdownExtensions, cssFile=cssFile)
 	env.Depends(htmlFile, mdFile)
+	if cssFile:
+		env.Depends(htmlFile, cssFile)
 	if moFile:
 		env.Depends(htmlFile, moFile)
 	env.Depends(addon, htmlFile)

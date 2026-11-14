@@ -567,6 +567,16 @@ def _sayAllKnowsItsStart():
 _sayAllKnowsStart = None
 
 
+def _isNvdaStarting():
+	"""Whether NVDA is still starting, rather than e.g. the user selecting a synthesizer."""
+	try:
+		import NVDAState
+		return not NVDAState._TrackNVDAInitialization.isInitializationComplete()
+	except Exception:
+		# Private to NVDA; without it, a failure at start up is left to NVDA as before.
+		return False
+
+
 def _isUserSayAll():
 	"""Whether the user started say all, rather than e.g. a page load.
 	Always True for say all if NVDA can't tell."""
@@ -1708,6 +1718,8 @@ class SynthDriver(BaseSynthDriver):
 	supportedNotifications = {synthIndexReached, synthDoneSpeaking}
 	# Above zero while NVDA sets up, loads or saves settings; see _allSettingsVisible.
 	_configuring = 0
+	# Set while ElevenLabs couldn't be set up as NVDA started; see _fallBackAtStartup.
+	_failedAtStart = False
 
 	@classmethod
 	def check(cls):
@@ -1769,15 +1781,17 @@ class SynthDriver(BaseSynthDriver):
 		self._loadOutputFormat()
 		self._migrateLegacyVariantSetting()
 		self._loadSavedModel()
-		# Everything below may raise on purpose: NVDA then tells the user and falls
-		# back to a working synthesizer. terminate() is not called in that case.
-		self._loadAccountState()
 		_installTagFilter()
 		self._worker = _SpeechWorker(self)
+		# Everything in here may raise on purpose: NVDA then tells the user and falls
+		# back to a working synthesizer. terminate() is not called in that case.
 		try:
+			self._loadAccountState()
 			self._checkVoicesAtStartup()
 			self._checkModelsAtStartup()
-		except Exception:
+		except Exception as e:
+			if self._fallBackAtStartup(e):
+				return
 			# Started above, so it has to be stopped before the exception leaves.
 			self._worker.stop()
 			raise
@@ -1883,7 +1897,8 @@ class SynthDriver(BaseSynthDriver):
 			if attempt == 0:
 				self.useNavigationSynth(synth.name)
 		self._navigation.unload()
-		self._announceNoNavigation()
+		if not self._fallBackWithoutNavigation():
+			self._announceNoNavigation()
 		return False
 
 	def _get_supportedCommands(self):
@@ -1892,8 +1907,9 @@ class SynthDriver(BaseSynthDriver):
 		return self._supportedCommands if speaker is self else speaker.supportedCommands
 
 	def _isGivenUp(self):
-		"""True once ElevenLabs is given up and the navigation synthesizer speaks instead."""
-		return self._fellBack and self._navigation.synth is not None
+		"""True once ElevenLabs is given up, so it isn't asked again; the navigation
+		synthesizer or FALLBACK_SYNTH speaks instead."""
+		return self._fellBack
 
 	def useNavigationSynth(self, name):
 		"""Loads synthesizer name to speak outside say all, or none if None.
@@ -1901,17 +1917,15 @@ class SynthDriver(BaseSynthDriver):
 		import ui
 		if not name:
 			self._navigation.unload()
-			if self._fellBack:
-				# Nothing is left for ElevenLabs to hand speech to.
-				self._fellBack = False
-				self._fallBack("it was given up and there is no navigation synthesizer any more.")
+			self._fallBackWithoutNavigation()
 			return True
 		if name == self.name:
 			log.error("ElevenLabs: can't be its own navigation synthesizer.")
 			name = _navigation.FALLBACK_SYNTH
 		loaded = self._navigation.load(name)
 		if loaded is None:
-			self._announceNoNavigation()
+			if not self._fallBackWithoutNavigation():
+				self._announceNoNavigation()
 			return False
 		if loaded == name:
 			return True
@@ -1937,6 +1951,36 @@ class SynthDriver(BaseSynthDriver):
 			_("Could not load a synthesizer for navigation; using ElevenLabs for all speech."),
 		)
 
+	def _fallBackWithoutNavigation(self):
+		"""Hands speech to FALLBACK_SYNTH if ElevenLabs was given up and the navigation
+		synthesizer is gone; True if so."""
+		if not self._fellBack or self._navigation.synth is not None:
+			return False
+		# Nothing is left for ElevenLabs to hand speech to.
+		self._fellBack = False
+		self._fallBack("it was given up and there is no navigation synthesizer any more.")
+		return True
+
+	def _fallBackAtStartup(self, error):
+		"""Has the navigation synthesizer speak everything if ElevenLabs can't be set up
+		as NVDA starts. False if NVDA should fall back itself: when the user selected
+		ElevenLabs, or no navigation synthesizer is switched on or can be loaded."""
+		name = _settings.get("navigationSynth")
+		if not name or not _isNvdaStarting():
+			return False
+		if not isinstance(error, ElevenLabsUnavailable):
+			log.error("ElevenLabs: unexpected error while starting", exc_info=error)
+		if name == self.name:
+			log.error("ElevenLabs: can't be its own navigation synthesizer.")
+			name = _navigation.FALLBACK_SYNTH
+		# Set first, so the settings ring built while loading leaves out ElevenLabs' settings.
+		self._failedAtStart = True
+		if self._navigation.load(name) is None:
+			self._failedAtStart = False
+			return False
+		self._fallBack(f"it could not be set up as NVDA started. {error}")
+		return True
+
 	def _get_navigationSynthDescription(self):
 		"""The name of the synthesizer speaking outside say all, or None."""
 		synth = self._navigation.synth
@@ -1958,6 +2002,10 @@ class SynthDriver(BaseSynthDriver):
 		"""Tries ElevenLabs again after it was given up, e.g. with a new API key."""
 		if not self._fellBack or self._navigation.synth is None:
 			return
+		if self._failedAtStart:
+			# Never set up, so that is done first, off the main thread.
+			self.recheck()
+			return
 		self._fellBack = False
 		self._transientFailures = 0
 		log.info("ElevenLabs: trying ElevenLabs again for say all.")
@@ -1967,6 +2015,9 @@ class SynthDriver(BaseSynthDriver):
 	def _get_supportedSettings(self):
 		if self._configuring:
 			return self._allSettings
+		if self._failedAtStart:
+			# Its voices and models aren't known, so only the navigation synthesizer's are offered.
+			return ()
 		info = _modelInfo(self._modelId)
 		presets = self._modelId in self._presetStabilityModels
 		# Shown only if the model takes them, besides the voice_settings in _SETTING_API_NAMES.
@@ -2009,6 +2060,9 @@ class SynthDriver(BaseSynthDriver):
 			self._refreshGui(changedSetting="model")
 
 	def saveSettings(self):
+		if self._failedAtStart:
+			# The voice isn't known until set up, so the saved settings are kept as they are.
+			return
 		with self._allSettingsVisible():
 			super().saveSettings()
 
@@ -2064,15 +2118,7 @@ class SynthDriver(BaseSynthDriver):
 				f"ElevenLabs: {reason} Say all uses {navigation.name} until ElevenLabs is selected again, "
 				f"a new API key is set, or voices are checked again."
 			)
-
-			def announce():
-				# Translators: spoken when ElevenLabs stops working and the synthesizer chosen
-				# for navigation reads say all instead, e.g. "...say all will use eSpeak NG."
-				ui.message(_("ElevenLabs is unavailable; say all will use {synth}.").format(
-					synth=navigation.description
-				))
-
-			queueHandler.queueFunction(queueHandler.eventQueue, announce)
+			self._announceGivenUp()
 			return
 		log.error(f"ElevenLabs: {reason} Switching to eSpeak until ElevenLabs is selected again.")
 
@@ -2086,6 +2132,22 @@ class SynthDriver(BaseSynthDriver):
 
 		# Changing synthesizer has to happen on the main thread.
 		queueHandler.queueFunction(queueHandler.eventQueue, switch)
+
+	def _announceGivenUp(self):
+		"""Tells the user the navigation synthesizer reads say all instead of ElevenLabs."""
+		import ui
+		navigation = self._navigation.synth
+		if navigation is None:
+			return
+
+		def announce():
+			# Translators: spoken when ElevenLabs stops working and the synthesizer chosen
+			# for navigation reads say all instead, e.g. "...say all will use eSpeak NG."
+			ui.message(_("ElevenLabs is unavailable; say all will use {synth}.").format(
+				synth=navigation.description
+			))
+
+		queueHandler.queueFunction(queueHandler.eventQueue, announce)
 
 	def reportError(self, kind, message):
 		"""Logs an error, but not once per utterance while it keeps happening."""
@@ -2457,14 +2519,20 @@ class SynthDriver(BaseSynthDriver):
 
 		@param onFinished: called on the checking thread with the numbers of usable
 			and unusable voices and models; interface work must go to the main thread.
+			If ElevenLabs failed at start up, it is only called once set up, on the main thread.
 		"""
 		if self._probeThread is not None and self._probeThread.is_alive():
 			return False
-		# Asked for by the user, so worth trying ElevenLabs again if it was given up.
-		self.retryAfterFallBack()
+		if self._failedAtStart:
+			# Never set up, so the start up checks are run instead.
+			target = self._setUpAgain
+		else:
+			# Asked for by the user, so worth trying ElevenLabs again if it was given up.
+			self.retryAfterFallBack()
+			target = self._recheckNow
 		# Off the main thread, so NVDA doesn't freeze while the user works.
 		self._probeThread = threading.Thread(
-			target=self._recheckNow,
+			target=target,
 			args=(onFinished,),
 			name="ElevenLabsCheck",
 			daemon=True,
@@ -2481,16 +2549,53 @@ class SynthDriver(BaseSynthDriver):
 			self._checkModels()
 			self._refreshGui()
 		finally:
-			if onFinished is not None and not self._probeStop.is_set():
-				try:
-					onFinished(
-						len(self._voicesCache),
-						len(self._unusableVoices),
-						len(_offeredModels) - len(self._unusableModels),
-						len(self._unusableModels),
-					)
-				except Exception:
-					log.error("ElevenLabs: could not report the check result", exc_info=True)
+			self._reportCheck(onFinished)
+
+	def _setUpAgain(self, onFinished=None):
+		"""Runs the start up checks that failed as NVDA started; ElevenLabs reads say all
+		again once they pass."""
+		try:
+			self._loadSavedModel()
+			self._loadAccountState()
+			self._checkVoicesAtStartup()
+			self._checkModelsAtStartup()
+		except Exception as e:
+			if isinstance(e, ElevenLabsUnavailable):
+				log.error(f"ElevenLabs: still unavailable. {e}")
+			else:
+				log.error("ElevenLabs: unexpected error while setting up again", exc_info=True)
+			if not self._probeStop.is_set():
+				self._announceGivenUp()
+			return
+		# NVDA's settings must be applied on the main thread, so the rest happens there.
+		queueHandler.queueFunction(queueHandler.eventQueue, self._onSetUp, onFinished)
+
+	def _onSetUp(self, onFinished):
+		if self._probeStop.is_set() or not self._failedAtStart:
+			return
+		self._failedAtStart = False
+		try:
+			# Applied again, as e.g. the saved voice wasn't on the list before.
+			self.loadSettings()
+		except Exception:
+			log.error("ElevenLabs: could not apply the saved settings", exc_info=True)
+		self._fellBack = False
+		self._transientFailures = 0
+		log.info("ElevenLabs: set up; trying ElevenLabs again for say all.")
+		self._reportCheck(onFinished)
+
+	def _reportCheck(self, onFinished):
+		if onFinished is None or self._probeStop.is_set():
+			return
+		try:
+			onFinished(
+				len(self._voicesCache),
+				len(self._unusableVoices),
+				len(_offeredModels) - len(self._unusableModels),
+				len(self._unusableModels),
+			)
+		except Exception:
+			log.error("ElevenLabs: could not report the check result", exc_info=True)
 
 	def _startupCandidates(self):
 		"""Voices to try at start up, likeliest to work first.

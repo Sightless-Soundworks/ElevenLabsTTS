@@ -31,6 +31,8 @@ If the synthesizer for navigation can't be loaded, eSpeak takes its place, and N
 
 If ElevenLabs stops working, for example because you've run out of credits or your key no longer works, the synthesizer for navigation reads say all for the rest of the session, and the add-on stops asking ElevenLabs. If ElevenLabs can't be reached or its servers fail, the other synthesizer reads any sentence ElevenLabs couldn't, and the add-on gives up on ElevenLabs after three such sentences in a row. To try ElevenLabs again, set a new API key, press NVDA+shift+v, or select ElevenLabs again.
 
+The same goes for starting NVDA with ElevenLabs selected: if ElevenLabs can't be used, the synthesizer for navigation speaks everything, including say all. This only happens while the synthesizer for navigation is switched on. If it is switched off, or if ElevenLabs stops working and you then switch it off, NVDA uses another synthesizer instead. Selecting ElevenLabs in NVDA's synthesizer dialog when it can't be used still gives an error, as before.
+
 One thing to be aware of: a configuration profile that selects another synthesizer, such as a profile for say all, unloads ElevenLabs completely, and the synthesizer for navigation goes with it.
 
 ## Keyboard commands

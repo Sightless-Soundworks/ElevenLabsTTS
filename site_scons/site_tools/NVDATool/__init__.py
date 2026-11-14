@@ -21,6 +21,10 @@ The following environment variables are required to build the HTML:
 - mdExtensions: list[str]
 - addon_info: .typings.AddonInfo
 
+Optional:
+
+- cssFile: SCons file node of a stylesheet to put into the page, or None
+
 """
 
 from SCons.Script import Environment, Builder
@@ -91,6 +95,7 @@ def generate(env: Environment):
 	)
 
 	env.SetDefault(mdExtensions={})
+	env.SetDefault(cssFile=None)
 
 	mdAction = env.Action(
 		lambda target, source, env: md2html(
@@ -99,6 +104,7 @@ def generate(env: Environment):
 			moFile=env["moFile"].path if env["moFile"] else None,
 			mdExtensions=env["mdExtensions"],
 			addon_info=env["addon_info"],
+			cssFile=env["cssFile"].path if env["cssFile"] else None,
 		)
 		and None,
 		lambda target, source, env: f"Generating {target[0]}",
