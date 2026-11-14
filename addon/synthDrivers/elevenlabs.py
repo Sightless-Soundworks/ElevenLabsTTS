@@ -88,6 +88,9 @@ VOICE_CHECK_DEADLINE = 20
 MODEL_CHECK_DEADLINE = 15
 # Kept low, since the free plan allows few concurrent requests per model.
 MODEL_PROBE_WORKERS = 2
+# Background checks send one request at a time and give way to speech, so they
+# may take longer.
+BACKGROUND_CHECK_DEADLINE = 300
 
 # One retry covers a dropped connection or a busy server without much delay.
 MAX_RETRIES = 1
@@ -1109,6 +1112,10 @@ class _SpeechWorker(threading.Thread):
 		with self._jobsChanged:
 			self._jobs.clear()
 
+	def fetching(self):
+		"""Whether speech is being fetched, including the next part's prefetch."""
+		return any(d is not None and d.is_alive() for d in (self._download, self._prefetch))
+
 	def stop(self):
 		self._running = False
 		self.cancelAll()
@@ -1788,7 +1795,6 @@ class SynthDriver(BaseSynthDriver):
 		try:
 			self._loadAccountState()
 			self._checkVoicesAtStartup()
-			self._checkModelsAtStartup()
 		except Exception as e:
 			if self._fallBackAtStartup(e):
 				return
@@ -1806,6 +1812,8 @@ class SynthDriver(BaseSynthDriver):
 		navigationSynth = _settings.get("navigationSynth")
 		if navigationSynth:
 			self.useNavigationSynth(navigationSynth)
+		# Once NVDA has applied the saved settings, which may change the model.
+		queueHandler.queueFunction(queueHandler.eventQueue, self._startBackgroundChecks, self._voiceId)
 
 	def terminate(self):
 		self.cancel()
@@ -2388,10 +2396,10 @@ class SynthDriver(BaseSynthDriver):
 		return usable
 
 	def _checkVoicesAtStartup(self):
-		"""Settles the voice list before NVDA reads it.
+		"""Makes sure a voice speaks before NVDA uses the synthesizer.
 
-		NVDA waits for this on purpose: the settings dialog keeps the list it first
-		reads, so it has to be right from the start. The result is cached."""
+		Only that voice is checked while NVDA waits; the rest are checked in the
+		background, see _startBackgroundChecks, unless a cached result applies."""
 		if not self._voicesCache:
 			raise ElevenLabsUnavailable(
 				"None of the voices on this ElevenLabs account can be used with the current "
@@ -2401,28 +2409,77 @@ class SynthDriver(BaseSynthDriver):
 		# The chosen voice is checked first, since that request also proves the
 		# key, the plan and the audio format work end to end.
 		self._validateStartupVoice()
+
+	def _uncheckedVoices(self, proven):
+		"""The voices left to check besides proven, which has spoken; none if a cached
+		result applies or the check is switched off."""
 		if self._voicesChecked:
-			return
+			return []
 		if self._voiceCheckDisabled():
 			log.debug(f"ElevenLabs: the voice check is switched off in {_settings.SETTINGS_FILENAME}.")
-			return
-		pending = [v for v in self._voicesCache if v != self._voiceId]
-		if pending:
-			self._checkVoices(pending)
+			return []
+		return [v for v in self._voicesCache if v != proven]
 
-	def _checkVoices(self, pending):
-		"""Tries each voice once and takes the ones that fail out of the list."""
+	def _startBackgroundChecks(self, proven):
+		"""Checks the voices and models without a cached result, after NVDA has started.
+		On the main thread; proven is the voice that spoke at start up."""
+		if self._probeStop.is_set() or getSynth() is not self:
+			return
+		if self._probeThread is not None and self._probeThread.is_alive():
+			return
+		pending = self._uncheckedVoices(proven)
+		if not pending and self._modelsChecked:
+			return
+		self._probeThread = threading.Thread(
+			target=self._checkInBackground,
+			args=(pending, proven),
+			name="ElevenLabsCheck",
+			daemon=True,
+		)
+		self._probeThread.start()
+
+	def _checkInBackground(self, pending, proven):
+		log.debug(
+			f"ElevenLabs: checking {len(pending)} voice(s)"
+			f"{'' if self._modelsChecked else ' and the models'} in the background."
+		)
+		# One request at a time, as speech needs the account's concurrent requests.
+		if pending:
+			self._checkVoices(pending, proven, workers=1, deadline=BACKGROUND_CHECK_DEADLINE)
+		if not self._probeStop.is_set():
+			self._checkModelsAtStartup(workers=1, deadline=BACKGROUND_CHECK_DEADLINE)
+		if not self._probeStop.is_set():
+			self._refreshGui()
+
+	def _waitForSpeech(self):
+		"""Holds a check back while speech is being fetched, so they don't compete for
+		the account's concurrent requests; False if the check should stop."""
+		worker = self._worker
+		while worker is not None and worker.fetching():
+			if self._probeStop.wait(POLL_INTERVAL):
+				return False
+		return not self._probeStop.is_set()
+
+	def _checkVoices(self, pending, proven=None, workers=PROBE_WORKERS, deadline=VOICE_CHECK_DEADLINE):
+		"""Tries each voice once and takes the ones that fail out of the list.
+
+		proven is a voice that has already spoken; the chosen one if None."""
 		if len(pending) > MAX_PROBED_VOICES:
 			log.warning(
 				f"ElevenLabs: only checking {MAX_PROBED_VOICES} of {len(pending)} voices; "
 				"any others that turn out to be unusable are removed when first used."
 			)
 			pending = pending[:MAX_PROBED_VOICES]
+		# The result belongs to the model chosen now, so it is checked with that one.
+		modelId = self._modelId
 		started = time.time()
 		unusable, unanswered, succeeded, lastReason, accountFailure = self._probeAll(
-			pending, started + VOICE_CHECK_DEADLINE, self._probeVoice, PROBE_WORKERS
+			pending, started + deadline, lambda voiceId: self._probe(voiceId, modelId), workers
 		)
 		if self._probeStop.is_set():
+			return
+		if self._modelId != modelId:
+			log.debug("ElevenLabs: the model changed during the voice check, so its result is dropped.")
 			return
 		if accountFailure:
 			# What was learned is unreliable, so nothing is hidden or cached and
@@ -2434,7 +2491,8 @@ class SynthDriver(BaseSynthDriver):
 			return
 		# Without a voice that has already spoken, every voice failing points at
 		# the account, so hiding the whole list would be the wrong conclusion.
-		provenVoice = self._voiceId is not None and self._voiceId not in pending
+		proven = self._voiceId if proven is None else proven
+		provenVoice = proven is not None and proven not in pending
 		if not provenVoice and not succeeded and len(pending) > 1 and unusable:
 			log.error(
 				"ElevenLabs: every voice was refused, so this looks like an account problem "
@@ -2488,7 +2546,7 @@ class SynthDriver(BaseSynthDriver):
 		accountFailure = []
 
 		def probe(item):
-			if accountFailure or self._probeStop.is_set() or time.time() > deadline:
+			if accountFailure or not self._waitForSpeech() or time.time() > deadline:
 				return PROBE_UNKNOWN, "check abandoned"
 			result, detail = probeOne(item)
 			if result in (PROBE_ACCOUNT, PROBE_MODEL):
@@ -2558,6 +2616,10 @@ class SynthDriver(BaseSynthDriver):
 			self._loadSavedModel()
 			self._loadAccountState()
 			self._checkVoicesAtStartup()
+			# Nothing is spoken with ElevenLabs yet, so these needn't wait for speech.
+			pending = self._uncheckedVoices(self._voiceId)
+			if pending:
+				self._checkVoices(pending)
 			self._checkModelsAtStartup()
 		except Exception as e:
 			if isinstance(e, ElevenLabsUnavailable):
@@ -2854,17 +2916,17 @@ class SynthDriver(BaseSynthDriver):
 		self._modelsChecked = True
 		return True
 
-	def _checkModelsAtStartup(self):
-		"""Settles the model list before NVDA reads it, unless a cached result applies."""
+	def _checkModelsAtStartup(self, workers=MODEL_PROBE_WORKERS, deadline=MODEL_CHECK_DEADLINE):
+		"""Settles the model list, unless a cached result applies."""
 		if self._modelsChecked:
 			return
 		try:
-			self._checkModels()
+			self._checkModels(workers, deadline)
 		except Exception:
 			# Never fatal, since the default model is known to work.
 			log.error("ElevenLabs: the model check failed", exc_info=True)
 
-	def _checkModels(self):
+	def _checkModels(self, workers=MODEL_PROBE_WORKERS, deadline=MODEL_CHECK_DEADLINE):
 		"""Tries each model once and leaves out those this account can't use.
 
 		Every field a model may take is sent, so those it refuses are learned."""
@@ -2877,9 +2939,9 @@ class SynthDriver(BaseSynthDriver):
 		voiceId = self._modelProbeVoice()
 		unusable, unanswered, succeeded, lastReason, accountFailure = self._probeAll(
 			pending,
-			time.time() + MODEL_CHECK_DEADLINE,
+			time.time() + deadline,
 			lambda modelId: self._probeModel(voiceId, modelId),
-			MODEL_PROBE_WORKERS,
+			workers,
 		)
 		if self._probeStop.is_set():
 			return
